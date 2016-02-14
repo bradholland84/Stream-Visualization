@@ -23,6 +23,14 @@ $(function() {
     function callback(event, data) {
         analyzeColor(data.color);
         drawShape(data.color, data.weight);
+
+        if (_.isEmpty(previousShapes[idx])) {
+            //first time drawing triangle in 'quadrant'
+
+        } else {
+            //add to triangle stack
+            
+        }
     }
 
     //Calculate RGB values from hex string
