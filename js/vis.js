@@ -8,11 +8,6 @@ $(function() {
     //counter for radius increase
     var count = 0;
 
-    //first circle radius
-    var firstR = 0;
-    //second circle radius
-    var secondR = 0;
-
     //Set canvas to full viewport size
     var canvas = $('#main_canvas');
     canvas.attr({
@@ -27,9 +22,7 @@ $(function() {
     $(document).on("message", callback);
     function callback(event, data) {
         var HSL = analyzeColor(data.color);
-        //drawArc(data.color, HSL, data.weight);
-
-        drawNewArc(data.color, data.weight);
+        drawNewArc(data.color, HSL, data.weight);
         count += 1;
     }
 
@@ -70,72 +63,55 @@ $(function() {
         return [h, s, l];
     }
 
+    //first circle radius
+    var firstR = 0;
+    //second circle radius
+    var secondR = 0;
+
     //Draw color arc with midpoint corresponding to HSL Hue degree
     // & wight # of radians
-    function drawArc(hexColor, hslColor, weight) {
+    function drawNewArc(hexColor, hslColor, weight) {
         var arcMidpoint = hslColor[0] * (2 * Math.PI);
-        //var arcStart = arcMidpoint - (weight/360);
-        //var arcEnd = arcMidpoint + (weight/360);
-        var arcStart = arcMidpoint - 10;
-        var arcEnd = arcMidpoint + 10;
-        //var arcStart = 0;
-        //var arcEnd = 2 * Math.PI;
-        Math.pow(2, 1/count);
-
-        c.beginPath();
-        c.lineWidth = 3;
+        var arcStart = arcMidpoint - (weight/100 * Math.PI * 0.5);
+        var arcEnd = arcMidpoint + (weight/100 * Math.PI * 0.5);
         c.strokeStyle = hexColor;
-        c.arc(
-            vpMidpoint.x,
-            vpMidpoint.y,
-            Math.sqrt(Math.pow(2, count)),
-            arcStart,
-            arcEnd,
-            false
-        );
-        c.stroke();
-    }
 
-    function drawNewArc(hexColor, weight) {
-        c.strokeStyle = hexColor;
-        c.lineWidth = 3;
         if (count == 0) {
-            firstR = 100;
-            //draw first circle
+            firstR = Math.max(vpHeight, vpWidth) / 20;
+            c.lineWidth = firstR;
             c.beginPath();
             c.arc(
                 vpMidpoint.x,
                 vpMidpoint.y,
-                100,
-                0,
-                2 * Math.PI,
+                firstR / 2,
+                arcStart,
+                arcEnd,
                 false
             );
             c.stroke();
         } else if (count == 1) {
-            secondR = 150;
-            //draw second circle
+            secondR = Math.sqrt(2) * firstR;
+            c.lineWidth = (secondR - firstR);
             c.beginPath();
             c.arc(
                 vpMidpoint.x,
                 vpMidpoint.y,
-                150,
-                0,
-                2 * Math.PI,
+                firstR + ((secondR - firstR) / 2),
+                arcStart,
+                arcEnd,
                 false
             );
             c.stroke();
         } else {
             var newR =  Math.sqrt(2 * Math.pow(secondR, 2) - Math.pow(firstR, 2));
-            console.log(newR);
-            c.lineWidth = (newR - secondR)
+            c.lineWidth = (newR - secondR);
             c.beginPath();
             c.arc(
                 vpMidpoint.x,
                 vpMidpoint.y,
                 secondR + ((newR - secondR) / 2),
-                0,
-                2 * Math.PI
+                arcStart,
+                arcEnd
             );
             c.stroke();
             firstR = secondR;
