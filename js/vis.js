@@ -5,8 +5,12 @@ $(function() {
     var vpHeight = $(window).height();
     var vpMidpoint = {x: vpWidth / 2, y: vpHeight / 2};
 
-    //counter for radius increase
+    //global counter for radius increases
     var count = 0;
+    //remember first arc radius
+    var firstR = 0;
+    //remember second arc radius
+    var secondR = 0;
 
     //Set canvas to full viewport size
     var canvas = $('#main_canvas');
@@ -26,7 +30,7 @@ $(function() {
         count += 1;
     }
 
-    //Calculate RGB values from hex string
+    //Calculate RGB values from random hex string
     function analyzeColor(hex) {
         var R = fromHex(hex, 1, 3);
         var G = fromHex(hex, 3, 5);
@@ -45,7 +49,7 @@ $(function() {
         var h, s, l = (max + min) / 2;
 
         if (max == min) {
-            // achromatic
+            //Achromatic
             h = s = 0;
         } else {
             var d = max - min;
@@ -59,17 +63,11 @@ $(function() {
             }
             h /= 6;
         }
-        //h, s, l between [0,1]
+        //h, s, l percent as [0,1] range
         return [h, s, l];
     }
 
-    //first circle radius
-    var firstR = 0;
-    //second circle radius
-    var secondR = 0;
-
-    //Draw color arc with midpoint corresponding to HSL Hue degree
-    // & wight # of radians
+    //Draw color arc with midpoint corresponding to HSL Hue degree 'h'
     function drawNewArc(hexColor, hslColor, weight) {
         var arcMidpoint = hslColor[0] * (2 * Math.PI);
         var arcStart = arcMidpoint - (weight/100 * Math.PI * 0.5);
@@ -77,46 +75,28 @@ $(function() {
         c.strokeStyle = hexColor;
 
         if (count == 0) {
+            //First arc uses viewport dimensions for size
             firstR = Math.max(vpHeight, vpWidth) / 20;
-            c.lineWidth = firstR;
-            c.beginPath();
-            c.arc(
-                vpMidpoint.x,
-                vpMidpoint.y,
-                firstR / 2,
-                arcStart,
-                arcEnd,
-                false
-            );
-            c.stroke();
+            drawCanvasArc(firstR, firstR / 2);
         } else if (count == 1) {
+            //Second arc matches first arc area * weight%
             secondR = Math.sqrt(2) * firstR;
-            c.lineWidth = (secondR - firstR);
-            c.beginPath();
-            c.arc(
-                vpMidpoint.x,
-                vpMidpoint.y,
-                firstR + ((secondR - firstR) / 2),
-                arcStart,
-                arcEnd,
-                false
-            );
-            c.stroke();
+            drawCanvasArc(secondR - firstR, firstR + ((secondR - firstR) / 2));
         } else {
+            //Subsequent arcs use two previous arcs to maintain area proportionality
             var newR =  Math.sqrt(2 * Math.pow(secondR, 2) - Math.pow(firstR, 2));
-            c.lineWidth = (newR - secondR);
-            c.beginPath();
-            c.arc(
-                vpMidpoint.x,
-                vpMidpoint.y,
-                secondR + ((newR - secondR) / 2),
-                arcStart,
-                arcEnd
-            );
-            c.stroke();
+            drawCanvasArc(newR - secondR, secondR + ((newR - secondR) / 2));
+            //update previous arc radii for future calculation
             firstR = secondR;
             secondR = newR;
         }
-    }
 
+        //Draws arc on canvas using 2d context
+        function drawCanvasArc(lineWidth, radius) {
+            c.lineWidth = lineWidth;
+            c.beginPath();
+            c.arc(vpMidpoint.x, vpMidpoint.y, radius, arcStart, arcEnd, false);
+            c.stroke();
+        }
+    }
 });
