@@ -5,13 +5,6 @@ $(function() {
     var vpHeight = $(window).height();
     var vpMidpoint = {x: vpWidth / 2, y: vpHeight / 2};
 
-    //global counter for radius increases
-    var count = 0;
-    //remember first arc radius
-    var firstR = 0;
-    //remember second arc radius
-    var secondR = 0;
-
     //Set canvas to full viewport size
     var canvas = $('#main_canvas');
     canvas.attr({
@@ -19,8 +12,12 @@ $(function() {
         "height": vpHeight
     });
 
-    //Get DOM Canvas object context
-    var c = document.getElementById('main_canvas').getContext('2d');
+    //Global counter for radius increases
+    var count = 0;
+    //Remember first arc radius
+    var firstR = 0;
+    //Remember second arc radius
+    var secondR = 0;
 
     //Respond to message containing stream data
     $(document).on("message", callback);
@@ -72,27 +69,29 @@ $(function() {
         var arcMidpoint = hslColor[0] * (2 * Math.PI);
         var arcStart = arcMidpoint - (weight/100 * Math.PI * 0.5);
         var arcEnd = arcMidpoint + (weight/100 * Math.PI * 0.5);
-        c.strokeStyle = hexColor;
+
 
         if (count == 0) {
             //First arc uses viewport dimensions for size
             firstR = Math.max(vpHeight, vpWidth) / 20;
-            drawCanvasArc(firstR, firstR / 2);
+            drawCanvasArc(firstR, firstR / 2, hexColor);
         } else if (count == 1) {
             //Second arc matches first arc area * weight%
             secondR = Math.sqrt(2) * firstR;
-            drawCanvasArc(secondR - firstR, firstR + ((secondR - firstR) / 2));
+            drawCanvasArc(secondR - firstR, firstR + ((secondR - firstR) / 2), hexColor);
         } else {
             //Subsequent arcs use two previous arcs to maintain area proportionality
             var newR =  Math.sqrt(2 * Math.pow(secondR, 2) - Math.pow(firstR, 2));
-            drawCanvasArc(newR - secondR, secondR + ((newR - secondR) / 2));
+            drawCanvasArc(newR - secondR, secondR + ((newR - secondR) / 2), hexColor);
             //update previous arc radii for future calculation
             firstR = secondR;
             secondR = newR;
         }
 
         //Draws arc on canvas using 2d context
-        function drawCanvasArc(lineWidth, radius) {
+        function drawCanvasArc(lineWidth, radius, hexColor) {
+            var c = document.getElementById('main_canvas').getContext('2d');
+            c.strokeStyle = hexColor;
             c.lineWidth = lineWidth;
             c.beginPath();
             c.arc(vpMidpoint.x, vpMidpoint.y, radius, arcStart, arcEnd, false);
