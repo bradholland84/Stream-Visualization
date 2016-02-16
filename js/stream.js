@@ -10,7 +10,7 @@
 				color: '#'+(Math.random()*0xFFFFFF<<0).toString(16),
 				weight: Math.max(Math.floor(Math.random() * range[1]), range[0])
 			});
-		}, 100);
+		}, 1000);
 
 	});
 
