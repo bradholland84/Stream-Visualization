@@ -70,7 +70,6 @@ $(function() {
         var arcStart = arcMidpoint - (weight/100 * Math.PI * 0.5);
         var arcEnd = arcMidpoint + (weight/100 * Math.PI * 0.5);
 
-
         if (count == 0) {
             //First arc uses viewport dimensions for size
             firstR = Math.max(vpHeight, vpWidth) / 20;
